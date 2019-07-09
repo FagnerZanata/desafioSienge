@@ -1,7 +1,13 @@
 package com.softplan.desafiosiegen;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -11,74 +17,67 @@ import com.softplan.desafiosiegen.model.eTipoServico;
 
 public class DesafioSiegen {
 
-	public Servico[] processaJson(JsonReader jsonReader) {
+	public List<Servico> calculaPorServicoRecursivo(String jsonPathFileName) throws FileNotFoundException {
+		List<Servico> servicos = Arrays.asList(processaJson(jsonPathFileName));
+		Map<Integer, List<Servico>> resulMapServicos = servicos.stream()
+				.collect(Collectors.groupingBy(Servico::getCodigoServico));
 
+		BigDecimal total = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+		
+		List<Servico> response = new ArrayList<Servico>();
+
+		BigDecimal totalServico = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+		for (Integer codServico : resulMapServicos.keySet()) {
+			total = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+			
+			totalServico = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+			
+			total = calculaServicoRec(codServico, totalServico, servicos);
+
+			Servico s = servicos.stream().filter(x -> x.getCodigoServico().equals(codServico))
+					.collect(Collectors.toList()).get(0);
+			
+			Servico serv = new Servico(s.getCodigoServico(),s.getDescricaoServico(),s.getUnidadeServico(),total);
+			response.add(serv);
+		}
+
+		return response;
+	}
+
+	private BigDecimal calculaServicoRec(Integer codServico, BigDecimal totalServico, List<Servico> servicos) {
+		for (Servico servico : servicos) {
+			BigDecimal totalItemServico = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+
+			if (servico.getCodigoServico().equals(codServico)) {
+				if (servico.getTipoServico() == eTipoServico.INSUMO) {
+					totalItemServico = DesafioSiegen.calculaTotalItem(servico);
+				} else {
+					BigDecimal totalComposicao = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+					return totalServico = ((calculaServicoRec(servico.getCodigoComposicao(), totalComposicao, servicos))
+							.multiply(new BigDecimal(servico.getQuantidadeComposicao().replace(",", "."))))
+									.add(totalServico);
+				}
+				totalServico = totalServico.add(totalItemServico);
+			}
+		}
+
+		return totalServico.setScale(2, RoundingMode.HALF_UP);
+	}
+
+	public static Servico[] processaJson(String jsonPathFileName) throws FileNotFoundException {
 		Gson gson = new Gson();
+		JsonReader reader = new JsonReader(new FileReader(jsonPathFileName));
 
-		// Type listType = new TypeToken<ArrayList<Servico>>(){}.getType();
-
-		Servico[] servicos = gson.fromJson(jsonReader, Servico[].class);
-
+		Servico[] servicos = gson.fromJson(reader, Servico[].class);
 		return servicos;
 	}
-	
-	
-	
 
 	public static BigDecimal calculaTotalItem(Servico s) {
 		BigDecimal total = new BigDecimal(s.getQuantidadeComposicao().replaceAll(",", "."))
 				.multiply(new BigDecimal(s.getValorUnidadeComposicao().replaceAll(",", ".")));
-		
-		System.out.println("retorno calculaTotalItem: " + total);
-		
-		return total;
 
-	}
+		return total.setScale(2, RoundingMode.HALF_EVEN);
 
-	public static BigDecimal calculaTotalComposicao(List<Servico> servicos, Servico servico, BigDecimal total) {
-
-		
-		for (Servico s : servicos.stream().filter(x -> x.getCodigoServico().equals(servico.getCodigoComposicao()))
-				.collect(Collectors.toList())) {
-				System.out.println(servico.getCodigoServico() + " : " + servico.getCodigoComposicao() + " Total: " + total);
-			if (s.getTipoServico().equals(eTipoServico.INSUMO)) {
-				System.out.println(servico.getCodigoServico() + " : " + servico.getCodigoComposicao() + " calculaTotalItem: " + total);
-				total = total.add(calculaTotalItem(s));
-						//.multiply(new BigDecimal(s.getQuantidadeComposicao().replaceAll(",", ".")));
-				
-			} else {
-				System.out.println(servico.getCodigoServico() + " : " + s.getCodigoComposicao() + " Antes de: chamar: " + total + " e X : " + servico.getQuantidadeComposicao());
-				return total.add( calculaTotalComposicao(servicos, s, total));
-						//.multiply(new BigDecimal(servico.getQuantidadeComposicao().replaceAll(",", "."))));
-			}
-			
-			
-		}
-		
-		System.out.println(servico.getCodigoServico() + " : " + servico.getCodigoComposicao() + " Fim: Total: " + total);
-		System.out.println(servico.getCodigoServico() + " : " + servico.getCodigoComposicao() + " Fim: X: " + new BigDecimal(servico.getQuantidadeComposicao().replaceAll(",", ".")));
-		//BigDecimal totalComposicao = total.multiply(new BigDecimal(servico.getQuantidadeComposicao().replaceAll(",", ".")));
-		//System.out.println(servico.getCodigoServico() + " : " + servico.getCodigoComposicao() + " Fim: totalComposicao: " + totalComposicao);
-
-		return total;
-		
-		
-		
-		//return calculaComposicaoRec(servicos, codServico, total);
-
-	}
-
-	private static BigDecimal calculaComposicaoRec(List<Servico> servicos, Integer codComposicao, BigDecimal total) {
-		for (Servico s : servicos.stream().filter(x -> x.getCodigoServico().equals(codComposicao))
-				.collect(Collectors.toList())) {
-			if (s.getTipoServico().equals(eTipoServico.INSUMO)) {
-				total = total.add(calculaTotalItem(s));
-			} else {
-				total = calculaComposicaoRec(servicos, s.getCodigoComposicao(), total)
-						.multiply(new BigDecimal(s.getQuantidadeComposicao().replaceAll(",", ".")));
-			}			
-		}
-		return total;
 	}
 
 }

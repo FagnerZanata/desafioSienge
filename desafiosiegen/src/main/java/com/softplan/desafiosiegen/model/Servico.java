@@ -1,14 +1,47 @@
 package com.softplan.desafiosiegen.model;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class Servico {
+
+	
+
+	public Servico() {
+		
+	}
+	
+	public Servico(Integer codigo, String descricao, eUnidade unidade, BigDecimal valorTotal) {
+		this.codigoServico = codigo;
+		this.descricaoServico = descricao;
+		this.unidadeServico = unidade;
+		this.valorTotal = valorTotal;
+		
+	}
+	
+	
+	public String toString() {
+		String builder = "";
+		
+		builder+=(codigoServico + " ");
+		
+		builder+=(descricaoServico + " ");
+		
+		builder+=(unidadeServico + " ");
+		
+		DecimalFormat df = new DecimalFormat();
+		df.setMaximumFractionDigits(2);
+		df.setMinimumFractionDigits(0);
+		builder+=(df.format( valorTotal));
+		
+		return builder;
+	}
 
 	@SerializedName("c\u00f3digo do servi\u00e7o")
 	@Expose
@@ -45,7 +78,7 @@ public class Servico {
 	@SerializedName("valor unit\u00e1rio")
 	@Expose
 	private String valorUnidadeComposicao;
-	
-	
+
 	private BigDecimal valorTotal;
+	
 }
