@@ -1,21 +1,17 @@
 # desafiosiegen
 
 ## Desenvolvimento
-
-1. Primeiramente entendido o sistema original e esclarecido a nova necessidade.
-2. Criado teste unitario para o sistema original com cenario de singular e plural.
-3. Refatorado o codigo mantendo o mesmo funcioando do sistema original, testes unitarios garatiram as alteracoes.
-4. Definida uma nova classe para usar na entrada do sistema, notaFiscalSR.
-5. Aplicada a mudanca de entrada de dados atráves de TDD.
-6. Entrada do sistema continua como Lista, mas observando qual o tipo de dado de entrada. Escolhida essa abordagem para manter o funcionando original conforme pedido no exercicio.
-7. Aplicado refatoracao conforme a necessidades do desenvolvimento, como por exemplo as funcoes "isUltimaNota" e "isPenultimaNota" afim de manter o metodo "retornaInformacoesNotas" mais limpo.
+1. Entendido a necessidade do problema.
+2. Iniciado pelo parser do Json usando a lib Gson.
+3. Realizado calculo apenas para servicos com insumos, sem composicao.
+4. Refatorado codigo para atender a servicos com composicao, infelizmento não completado.
  
  
 ## Classes
 * Classe Servico: Para mapeamento do Json para objecto java. 
 * Classe enums: eUnidade e eTipoServico par facilitar desenvolvimento.
 * Classe DesafioSiegen: Responsavel por processar e calcular os valores dos servicos.
-
+* Classe de teste DesafioSiegenTest: calculaPorServicoRecursivoTest e calculaPorServicoRecursivo_Valores. Outros testes foram tentativas de fazer a recursividade funcionar.
 
 
 ## Ambiente
